@@ -6,6 +6,7 @@ import { notFoundError } from "@/errors";
 
 async function getAllHotels(userId: number) {
     const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+
     if (!enrollment) {
         throw notFoundError();
     }
@@ -17,14 +18,37 @@ async function getAllHotels(userId: number) {
     }
 
     const hotels = await hotelsRepository.findMany();
+
     if (!hotels) throw notFoundError();
 
     return hotels;
 }
 
+async function getHotelRooms(userId: number, hotelId: number){
+    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+
+    if (!enrollment) {
+        throw notFoundError();
+    }
+
+    const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+
+    if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+        throw cannotListHotelsError();
+    }
+
+    const hotelRooms = await hotelsRepository.findById(hotelId);
+
+    if (!hotelRooms) throw notFoundError();
+
+    return hotelRooms;
+
+}
+
 
 const hotelsService = {
-    getAllHotels
+    getAllHotels,
+    getHotelRooms
 };
 
 export default hotelsService;

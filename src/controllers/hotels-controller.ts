@@ -13,6 +13,28 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
       if (error.name === "NotFoundError") {
         return res.sendStatus(httpStatus.NOT_FOUND)
       }
-      return res.sendStatus(httpStatus.PAYMENT_REQUIRED)
+      if (error.name === "cannotListHotelsError") {
+        return res.sendStatus(httpStatus.PAYMENT_REQUIRED)
+      }
+      return res.sendStatus(httpStatus.BAD_REQUEST)
     }
   }
+
+export async function getHotelRooms(req: AuthenticatedRequest, res:Response) {
+  const { userId } = req;
+  const { hotelId } = req.params;
+
+  try{
+    const hotelRooms = await hotelsService.getHotelRooms(Number(userId), Number(hotelId));
+
+    return res.status(httpStatus.OK).send(hotelRooms);
+  } catch (error) {
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND)
+    }
+    if (error.name === "cannotListHotelsError") {
+      return res.sendStatus(httpStatus.PAYMENT_REQUIRED)
+    }
+    return res.sendStatus(httpStatus.BAD_REQUEST)
+  }
+}
